@@ -135,7 +135,7 @@ io.on('connection', socket => {
       y: clampNumber(state.y, -20, 100),
       z: clampNumber(state.z, -1000, 1000),
       rotationY: clampNumber(state.rotationY, -100000, 100000),
-      mode: state.mode === 'pistol' ? 'pistol' : 'unarmed',
+      mode: state.mode === 'auto' ? 'auto' : 'pistol',
       state: ['idle', 'walk', 'run', 'jump'].includes(state.state) ? state.state : 'idle',
     };
     rooms.get(code).set(socket.id, safeState);
@@ -151,11 +151,11 @@ io.on('connection', socket => {
       id: socket.id,
       start: shot.start.map(Number),
       end: shot.end.map(Number),
-      mode: shot.mode === 'pistol' ? 'pistol' : 'unarmed',
+      mode: shot.mode === 'auto' ? 'auto' : 'pistol',
     });
 
-    // Only the pistol mode deals damage. The server validates hits against the opponent's latest position.
-    if (shot.mode !== 'pistol') return;
+    // Both weapon modes deal damage; the server validates hits against the opponent's latest position.
+    if (shot.mode !== 'pistol' && shot.mode !== 'auto') return;
     const now = Date.now();
     if (now - (lastShotAt.get(socket.id) || 0) < 90) return;
     lastShotAt.set(socket.id, now);

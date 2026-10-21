@@ -191,14 +191,14 @@
         <div class="glass-panel p-3 rounded-xl pointer-events-auto max-w-xs">
             <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 flex justify-between items-center">
                 <span>Combat Mode</span>
-                <span class="text-xxs text-slate-500">Keys [1] / [2]</span>
+                <span class="text-xxs text-slate-500">Keys [1] Pistol / [2] Auto</span>
             </div>
             <div class="grid grid-cols-2 gap-2">
                 <button id="btn-mode-unarmed" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white border border-indigo-400 shadow-md">
-                    <i class="fa-solid fa-hand-fist"></i> Default (Punch)
+                    <i class="fa-solid fa-gun"></i> Pistol (Default)
                 </button>
                 <button id="btn-mode-pistol" class="py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700">
-                    <i class="fa-solid fa-gun"></i> Full-Auto Rifle
+                    <i class="fa-solid fa-gun"></i> Auto Gun
                 </button>
             </div>
         </div>
@@ -220,11 +220,11 @@
                     <span class="text-indigo-400 font-semibold">Mouse Look</span>
                 </div>
                 <div id="hud-action-primary" class="flex justify-between items-center">
-                    <span>Auto Fire:</span>
+                    <span>Fire:</span>
                     <span id="mouse-left-click" class="key-cap px-2 py-0.5 rounded text-xxs font-bold text-amber-400 border-amber-500/40">HOLD LEFT CLICK</span>
                 </div>
                 <div id="hud-action-secondary" class="flex justify-between items-center">
-                    <span>Scope (Pistol Mode):</span>
+                    <span>Scope (Pistol):</span>
                     <span id="mouse-right-click" class="key-cap px-2 py-0.5 rounded text-xxs font-bold text-emerald-400 border-emerald-500/40">HOLD RIGHT CLICK</span>
                 </div>
                 <div class="flex justify-between items-center">
@@ -455,7 +455,8 @@
 
         // Auto Fire Weapon Mechanics
         let shootCooldown = 0;
-        let autoFireRate = 0.085;
+        const pistolFireRate = 0.32;
+        const autoGunFireRate = 0.085;
         let isShooting = false;
         let shootRecoilProgress = 0;
         let bulletTracers = [];
@@ -466,9 +467,10 @@
         let aimTargetPoint = new THREE.Vector3();
         let currentAimDistance = 30;
 
-        // Combat Mode: 'unarmed' vs 'pistol'
-        let combatMode = 'unarmed'; 
+        // Combat Mode: pistol is the default; auto is the full-auto gun.
+        let combatMode = 'pistol';
         let pistolMeshGroup = null;
+        let autoGunParts = null;
         let pistolSlideMesh = null;
         let muzzleFlashParticleSystem = null;
 
@@ -1137,6 +1139,22 @@
             // The barrel is aligned along the character's forward (+Z) direction.
             pistolMeshGroup = create3DPistolMesh();
             pistolMeshGroup.name = 'pistolMeshGroup';
+            autoGunParts = new THREE.Group();
+            autoGunParts.name = 'autoGunParts';
+            const autoMetal = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.38, metalness: 0.78 });
+            const stock = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.055, 0.2), autoMetal);
+            stock.position.set(0, -0.005, -0.16);
+            autoGunParts.add(stock);
+            const extendedBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.2, 10), autoMetal);
+            extendedBarrel.rotation.x = Math.PI / 2;
+            extendedBarrel.position.set(0, 0.02, 0.18);
+            autoGunParts.add(extendedBarrel);
+            const magazine = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.12, 0.06), autoMetal);
+            magazine.position.set(0, -0.075, 0.015);
+            magazine.rotation.x = -0.12;
+            autoGunParts.add(magazine);
+            pistolMeshGroup.add(autoGunParts);
+            autoGunParts.visible = false;
             pistolMeshGroup.position.set(0, -0.015, 0.025);
             pistolMeshGroup.rotation.set(0, 0, 0);
             pistolMeshGroup.visible = false;
@@ -1243,18 +1261,22 @@
 
         function setCombatMode(mode) {
             combatMode = mode;
+            if (autoGunParts) autoGunParts.visible = mode === 'auto';
+            const muzzleTip = pistolMeshGroup && pistolMeshGroup.getObjectByName('muzzleTip');
+            if (muzzleTip) muzzleTip.position.z = mode === 'auto' ? 0.28 : 0.11;
 
             if (btnModeUnarmed && btnModePistol) {
-                if (mode === 'unarmed') {
+                if (mode === 'pistol') {
                     btnModeUnarmed.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white border border-indigo-400 shadow-md";
                     btnModePistol.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700";
-                    if (pistolMeshGroup) pistolMeshGroup.visible = false;
+                    if (pistolMeshGroup) pistolMeshGroup.visible = true;
                 } else {
                     btnModePistol.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-indigo-600 text-white border border-indigo-400 shadow-md";
                     btnModeUnarmed.className = "py-2 px-3 rounded-lg text-xs font-bold transition flex items-center justify-center gap-1.5 bg-slate-800 text-slate-400 hover:text-slate-200 border border-slate-700";
                     if (pistolMeshGroup) pistolMeshGroup.visible = true;
                 }
             }
+            shootCooldown = 0;
         }
 
         function createWallImpactAnimation(point, normal) {
@@ -1323,7 +1345,7 @@
         function updateShootingAndImpactFX(delta) {
             if (shootCooldown > 0) shootCooldown -= delta;
 
-            if (isMouseDownLeft && combatMode === 'pistol' && shootCooldown <= 0) {
+            if (isMouseDownLeft && shootCooldown <= 0) {
                 triggerShoot();
             }
 
@@ -1426,7 +1448,7 @@
             if (matchFinished || shootCooldown > 0) return;
             isShooting = true;
             shootRecoilProgress = 0;
-            shootCooldown = autoFireRate;
+            shootCooldown = combatMode === 'pistol' ? pistolFireRate : autoGunFireRate;
 
             playGunshotSound();
 
@@ -1951,7 +1973,7 @@
                 proceduralBones.leftKnee.rotation.x = Math.max(0, -legAngle * 0.8);
                 proceduralBones.rightKnee.rotation.x = Math.max(0, legAngle * 0.8);
 
-                if (combatMode === 'pistol') {
+                if (combatMode !== 'unarmed') {
                     proceduralBones.spine.rotation.x = cameraPitch * 0.6;
                     proceduralBones.rightUpperArm.rotation.x = -Math.PI / 2.2 + cameraPitch * 0.8;
                     proceduralBones.rightUpperArm.rotation.y = -0.2;
@@ -1980,7 +2002,7 @@
                 proceduralBones.leftKnee.rotation.x = THREE.MathUtils.lerp(proceduralBones.leftKnee.rotation.x, 0, 0.1);
                 proceduralBones.rightKnee.rotation.x = THREE.MathUtils.lerp(proceduralBones.rightKnee.rotation.x, 0, 0.1);
 
-                if (combatMode === 'pistol') {
+                if (combatMode !== 'unarmed') {
                     proceduralBones.spine.rotation.x = cameraPitch * 0.6;
                     proceduralBones.rightUpperArm.rotation.x = -Math.PI / 2.2 + cameraPitch * 0.8;
                     proceduralBones.rightUpperArm.rotation.y = -0.2;
@@ -2052,8 +2074,8 @@
                     }
                 }
 
-                if (key === '1') setCombatMode('unarmed');
-                if (key === '2') setCombatMode('pistol');
+                if (key === '1') setCombatMode('pistol');
+                if (key === '2') setCombatMode('auto');
             });
 
             window.addEventListener('keyup', (e) => {
@@ -2071,15 +2093,10 @@
             window.addEventListener('mousedown', (e) => {
                 if (e.button === 0) {
                     isMouseDownLeft = true;
-                    if (combatMode === 'unarmed') {
-                        triggerPunch();
-                    }
                 } else if (e.button === 2) {
                     isMouseDownRight = true;
                     if (combatMode === 'pistol') {
                         isScoped = true;
-                    } else if (combatMode === 'unarmed') {
-                        triggerPunch();
                     }
                 }
             });
@@ -2092,8 +2109,8 @@
                 }
             });
 
-            if (btnModeUnarmed) btnModeUnarmed.addEventListener('click', () => setCombatMode('unarmed'));
-            if (btnModePistol) btnModePistol.addEventListener('click', () => setCombatMode('pistol'));
+            if (btnModeUnarmed) btnModeUnarmed.addEventListener('click', () => setCombatMode('pistol'));
+            if (btnModePistol) btnModePistol.addEventListener('click', () => setCombatMode('auto'));
             if (btnEnvToggle) btnEnvToggle.addEventListener('click', toggleEnvironment);
 
             if (speedSlider && speedValue) {
@@ -2329,7 +2346,7 @@
             target.rotation.y = Number.isFinite(state.rotationY) ? state.rotationY : 0;
             target.visible = true;
             const remotePistol = target.getObjectByName('pistolMeshGroup');
-            if (remotePistol) remotePistol.visible = state.mode === 'pistol';
+            if (remotePistol) remotePistol.visible = state.mode === 'pistol' || state.mode === 'auto';
         }
 
         function removeRemotePlayer(id) {
@@ -2490,6 +2507,7 @@
 
             createProceduralHumanAvatar();
             setupEventListeners();
+            setCombatMode('pistol');
             initMultiplayer();
             animate();
         }

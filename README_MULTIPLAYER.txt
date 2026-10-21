@@ -9,8 +9,9 @@ WHAT'S INCLUDED
 MULTIPLAYER FEATURES
 - Create a private six-character room code and join from a second browser/computer.
 - Synchronize player position, facing direction, combat mode, and basic movement state.
+- Players start with the pistol; press 1 for pistol or 2 for the full-auto gun. Hold left click to fire.
 - Show the other player's character and bullet tracers.
-- Both players have 100 health. Pistol hits deal 25 damage (4 hits per life).
+- Both players have 100 health. Hits deal 25 damage (4 hits per life); the auto gun fires faster than the pistol.
 - Each time a player's health reaches zero, their death count increases and they respawn with full health.
 - The first player to reach 3 deaths loses; the opponent wins. The server tracks health/deaths and checks shot lines against the opponent's latest reported position.
 - Health bars, health numbers, deaths out of 3, and a win/lose message appear in the multiplayer HUD.
