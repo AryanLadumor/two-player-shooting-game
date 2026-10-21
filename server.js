@@ -20,11 +20,11 @@ const MAX_HEALTH = 100;
 const SHOT_DAMAGE = 25;
 
 app.use(express.static(__dirname));
-// Serve the existing game at the root URL. The HTML file has a descriptive
-// filename rather than index.html, so express.static alone would return Cannot GET /.
+
 app.get('/', (_req, res) => {
-  res.sendFile(path.join(__dirname, '3d_fbx_character_controller_right_hand.html'));
+  res.sendFile(path.join(__dirname, '3d_shooter_game.html'));
 });
+
 app.get('/health', (_req, res) => res.json({ ok: true, rooms: rooms.size }));
 
 function makeCode() {
@@ -67,7 +67,6 @@ function pointSegmentDistanceSquared(point, start, end) {
 
 function shotHitsPlayer(shot, state) {
   if (!state) return false;
-  // Approximate the avatar as a vertical capsule using several points from legs to head.
   const sampleHeights = [0.45, 0.9, 1.35, 1.7];
   const radiusSq = 0.62 * 0.62;
   return sampleHeights.some(height =>
@@ -136,7 +135,6 @@ io.on('connection', socket => {
       z: clampNumber(state.z, -1000, 1000),
       rotationY: clampNumber(state.rotationY, -100000, 100000),
       mode: state.mode === 'auto' ? 'auto' : 'pistol',
-      state: ['idle', 'walk', 'run', 'jump'].includes(state.state) ? state.state : 'idle',
     };
     rooms.get(code).set(socket.id, safeState);
     socket.to(code).emit('player-state', safeState);
@@ -154,7 +152,6 @@ io.on('connection', socket => {
       mode: shot.mode === 'auto' ? 'auto' : 'pistol',
     });
 
-    // Both weapon modes deal damage; the server validates hits against the opponent's latest position.
     if (shot.mode !== 'pistol' && shot.mode !== 'auto') return;
     const now = Date.now();
     if (now - (lastShotAt.get(socket.id) || 0) < 90) return;
@@ -178,7 +175,6 @@ io.on('connection', socket => {
         io.to(code).emit('match-over', { winnerId: socket.id, loserId: opponentId, maxDeaths: MAX_DEATHS });
         return;
       }
-      // Respawn the defeated player at a known safe location, then restore health.
       opponentStats.health = MAX_HEALTH;
       const safeSpawns = [[0, 0, 0], [3, 0, 3]];
       const spawn = safeSpawns[[...room.keys()].indexOf(opponentId)] || [0, 0, 0];
@@ -201,5 +197,4 @@ function clampNumber(value, min, max) {
 
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`Multiplayer game server listening on http://localhost:${PORT}`);
-  console.log('For another computer on the same Wi-Fi, use this computer’s LAN IP and port 3000.');
 });
