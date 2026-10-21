@@ -194,6 +194,9 @@
         <div class="h-2 overflow-hidden rounded-full bg-slate-700"><div id="remote-health-fill" class="h-full rounded-full bg-cyan-500 transition-all" style="width:100%"></div></div>
         <div id="remote-health-text" class="mt-1 text-[10px] text-slate-300">Health: Waiting for opponent</div>
         <div id="match-result" class="hidden mt-3 rounded-lg bg-indigo-500/20 p-2 text-center text-sm font-black"></div>
+        <button id="btn-rematch" class="hidden mt-2.5 w-full rounded-lg bg-emerald-600 hover:bg-emerald-500 py-2 text-xs font-black uppercase tracking-wider shadow-lg transition">
+            <i class="fa-solid fa-rotate-right mr-1.5"></i> Play Rematch
+        </button>
     </div>
 
     <!-- 3D Canvas Container -->
@@ -1682,6 +1685,13 @@
             if (btnModePistol) btnModePistol.addEventListener('click', () => setCombatMode('pistol'));
             if (btnModeAuto) btnModeAuto.addEventListener('click', () => setCombatMode('auto'));
             if (btnEnvToggle) btnEnvToggle.addEventListener('click', toggleEnvironment);
+
+            // Rematch Button Event Handler
+            document.getElementById('btn-rematch')?.addEventListener('click', () => {
+                if (multiplayerSocket?.connected && multiplayerRoomCode) {
+                    multiplayerSocket.emit('request-rematch');
+                }
+            });
         }
 
         function setNetworkStatus(message, color = 'amber') {
@@ -1717,6 +1727,7 @@
             multiplayerSocket.on('player-shot', (shot) => showRemoteShot(shot));
             multiplayerSocket.on('match-update', (state) => updateCombatHud(state));
             multiplayerSocket.on('match-over', (result) => showMatchResult(result));
+            multiplayerSocket.on('match-rematch', (state) => applyRematch(state));
             multiplayerSocket.on('player-respawn', (data) => applyRespawn(data));
             multiplayerSocket.on('disconnect', () => {
                 setNetworkStatus('Disconnected', 'rose');
@@ -1751,6 +1762,7 @@
                 matchFinished = false;
                 document.getElementById('combat-hud')?.classList.add('hidden');
                 document.getElementById('match-result')?.classList.add('hidden');
+                document.getElementById('btn-rematch')?.classList.add('hidden');
                 document.getElementById('room-code-display')?.classList.add('hidden');
                 document.getElementById('btn-leave-room')?.classList.add('hidden');
                 document.getElementById('btn-create-room')?.classList.remove('hidden');
@@ -1767,6 +1779,7 @@
             matchFinished = false;
             document.getElementById('combat-hud')?.classList.remove('hidden');
             document.getElementById('match-result')?.classList.add('hidden');
+            document.getElementById('btn-rematch')?.classList.add('hidden');
             const display = document.getElementById('room-code-display');
             display?.classList.remove('hidden');
             document.getElementById('room-code-value').textContent = code;
@@ -1895,12 +1908,30 @@
         function showMatchResult(result) {
             matchFinished = true;
             const box = document.getElementById('match-result');
+            const rematchBtn = document.getElementById('btn-rematch');
             if (!box) return;
             box.classList.remove('hidden');
             const won = result?.winnerId === multiplayerPlayerId;
             box.textContent = won ? 'YOU WIN! 🎉' : 'YOU LOSE';
+            if (rematchBtn) rematchBtn.classList.remove('hidden');
             const status = document.getElementById('room-message');
             if (status) status.textContent = won ? 'Victory! Opponent eliminated.' : 'Defeat! You were eliminated.';
+        }
+
+        function applyRematch(state) {
+            matchFinished = false;
+            const box = document.getElementById('match-result');
+            const rematchBtn = document.getElementById('btn-rematch');
+            if (box) box.classList.add('hidden');
+            if (rematchBtn) rematchBtn.classList.add('hidden');
+            
+            characterGroup.position.set(0, 0, 0);
+            currentAmmo = ammoConfigs[combatMode].maxAmmo;
+            updateAmmoHUD();
+            updateCombatHud(state);
+            const status = document.getElementById('room-message');
+            if (status) status.textContent = 'Rematch started! Fight!';
+            sendMultiplayerState(true);
         }
 
         function applyRespawn(data) {

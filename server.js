@@ -140,6 +140,24 @@ io.on('connection', socket => {
     socket.to(code).emit('player-state', safeState);
   });
 
+  // Handle Quick Rematch Request from Client
+  socket.on('request-rematch', () => {
+    const code = socketRooms.get(socket.id);
+    if (!code) return;
+    const match = matchStates.get(code);
+    const room = rooms.get(code);
+    if (!match || !room || room.size < 2) return;
+
+    // Reset health and deaths for all players in the room
+    match.finished = false;
+    for (const [playerId] of match.players) {
+      match.players.set(playerId, { health: MAX_HEALTH, deaths: 0 });
+    }
+
+    const state = publicMatchState(code);
+    io.to(code).emit('match-rematch', state);
+  });
+
   socket.on('player-shot', shot => {
     const code = socketRooms.get(socket.id);
     if (!code || !rooms.has(code) || !shot) return;
