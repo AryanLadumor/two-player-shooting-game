@@ -59,6 +59,7 @@
 
     <!-- Three.js Core Library & Dependencies -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 </head>
 <body>
 
@@ -84,7 +85,7 @@
     <div class="fixed top-4 right-4 z-30 flex gap-2 pointer-events-none">
         <button id="btn-keybindings-toggle" class="glass-panel pointer-events-auto prevent-fire px-3.5 py-2.5 rounded-xl text-slate-200 hover:text-white hover:border-indigo-500/50 transition flex items-center gap-2 text-xs font-bold shadow-lg">
             <i class="fa-solid fa-keyboard text-indigo-400"></i>
-            <span>Keybindings</span>
+            <span>Settings & Keys</span>
         </button>
         <button id="btn-multiplayer-toggle" class="glass-panel pointer-events-auto prevent-fire px-3.5 py-2.5 rounded-xl text-slate-200 hover:text-white hover:border-indigo-500/50 transition flex items-center gap-2 text-xs font-bold shadow-lg">
             <i class="fa-solid fa-users text-cyan-400"></i>
@@ -96,60 +97,115 @@
         </button>
     </div>
 
-    <!-- Static Keybindings Modal Window -->
+    <!-- Enhanced Settings & Keybindings Modal Window -->
     <div id="keybindings-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden prevent-fire">
-        <div class="glass-panel bg-slate-900/95 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+        <div class="glass-panel bg-slate-900/95 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto">
             <button id="btn-close-keybindings" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
                 <i class="fa-solid fa-xmark"></i>
             </button>
 
             <h2 class="text-lg font-bold text-white mb-1 flex items-center gap-2">
-                <i class="fa-solid fa-gamepad text-indigo-400"></i> Controls & Keybindings
+                <i class="fa-solid fa-gear text-indigo-400"></i> Settings & Keybindings
             </h2>
-            <p class="text-xs text-slate-400 mb-5">Master player controls for combat and movement.</p>
+            <p class="text-xs text-slate-400 mb-5">Customize mouse sensitivity, crosshair appearance, and key bindings.</p>
 
-            <div class="space-y-2 text-xs">
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-arrows-up-down-left-right text-slate-500 mr-2"></i>Movement</span>
-                    <span class="font-mono text-indigo-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">W / A / S / D</span>
+            <div class="space-y-5 text-xs">
+                <!-- Mouse Sensitivity -->
+                <div class="bg-slate-950/60 border border-slate-800 p-3.5 rounded-xl space-y-3">
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-slate-200 font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-computer-mouse text-indigo-400"></i> Mouse Sensitivity
+                            </span>
+                            <span id="sensitivity-value" class="font-mono text-indigo-300 font-bold">0.0022</span>
+                        </div>
+                        <input id="input-sensitivity" type="range" min="0.0005" max="0.01" step="0.0001" value="0.0022" 
+                            class="w-full accent-indigo-500 cursor-pointer bg-slate-800 h-1.5 rounded-lg">
+                    </div>
+                    <div>
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-slate-200 font-bold flex items-center gap-2">
+                                <i class="fa-solid fa-crosshairs text-cyan-400"></i> Scope Sensitivity
+                            </span>
+                            <span id="scope-sensitivity-value" class="font-mono text-cyan-300 font-bold">0.0010</span>
+                        </div>
+                        <input id="input-scope-sensitivity" type="range" min="0.0002" max="0.005" step="0.0001" value="0.0010" 
+                            class="w-full accent-cyan-500 cursor-pointer bg-slate-800 h-1.5 rounded-lg">
+                    </div>
                 </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-eye text-slate-500 mr-2"></i>Aim / Direction</span>
-                    <span class="font-mono text-indigo-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Mouse Look</span>
+
+                <!-- Crosshair Customization -->
+                <div class="bg-slate-950/60 border border-slate-800 p-3.5 rounded-xl space-y-3">
+                    <span class="text-slate-200 font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-crosshair text-emerald-400"></i> Crosshair Appearance
+                    </span>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-400 block mb-1">Color</label>
+                            <select id="crosshair-color-select" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-indigo-500">
+                                <option value="emerald">Emerald Green</option>
+                                <option value="cyan">Cyan</option>
+                                <option value="amber">Amber Gold</option>
+                                <option value="rose">Hot Rose</option>
+                                <option value="white">Pure White</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-[10px] uppercase text-slate-400 block mb-1">Spread / Size</label>
+                            <input id="input-crosshair-size" type="range" min="10" max="30" step="1" value="20" 
+                                class="w-full accent-emerald-500 cursor-pointer bg-slate-800 h-1.5 rounded-lg mt-2">
+                        </div>
+                    </div>
                 </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-crosshair text-slate-500 mr-2"></i>Fire Weapon</span>
-                    <span class="font-mono text-amber-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Left Click (Hold)</span>
-                </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-magnifying-glass text-slate-500 mr-2"></i>Scope Optic</span>
-                    <span class="font-mono text-emerald-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">Right Click (Hold - Pistol)</span>
-                </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-rotate-right text-slate-500 mr-2"></i>Reload Magazine</span>
-                    <span class="font-mono text-amber-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">R</span>
-                </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-gun text-slate-500 mr-2"></i>Switch Weapon</span>
-                    <span class="font-mono text-cyan-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">1 (Pistol) / 2 (Auto)</span>
-                </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-person-running text-slate-500 mr-2"></i>Jump / Sprint</span>
-                    <span class="font-mono text-slate-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">SPACE / SHIFT</span>
-                </div>
-                <div class="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                    <span class="text-slate-300 font-medium"><i class="fa-solid fa-arrow-pointer text-slate-500 mr-2"></i>Unlock Mouse</span>
-                    <span class="font-mono text-slate-300 font-bold bg-slate-800 px-2 py-0.5 rounded border border-slate-700">ESC</span>
+
+                <!-- Key Bindings -->
+                <div class="space-y-2">
+                    <span class="text-slate-200 font-bold flex items-center gap-2 mb-1">
+                        <i class="fa-solid fa-keyboard text-cyan-400"></i> Key Bindings (Click to Rebind)
+                    </span>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Move Forward</span>
+                        <button data-action="w" class="key-bind-btn font-mono text-indigo-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">W</button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Move Left</span>
+                        <button data-action="a" class="key-bind-btn font-mono text-indigo-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">A</button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Move Backward</span>
+                        <button data-action="s" class="key-bind-btn font-mono text-indigo-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">S</button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Move Right</span>
+                        <button data-action="d" class="key-bind-btn font-mono text-indigo-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">D</button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Jump</span>
+                        <button data-action="space" class="key-bind-btn font-mono text-slate-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">SPACE</button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Reload Magazine</span>
+                        <button data-action="reload" class="key-bind-btn font-mono text-amber-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">R</button>
+                    </div>
+                    <div class="flex items-center justify-between p-2 rounded-lg bg-slate-950/60 border border-slate-800">
+                        <span class="text-slate-300 font-medium">Free Spectate Mode</span>
+                        <button data-action="spectate" class="key-bind-btn font-mono text-cyan-300 font-bold bg-slate-800 px-3 py-1 rounded border border-slate-700 hover:border-indigo-500 transition">V</button>
+                    </div>
                 </div>
             </div>
 
-            <button id="btn-confirm-keybindings" class="mt-5 w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition">
-                Got It!
-            </button>
+            <div class="flex gap-3 mt-5">
+                <button id="btn-reset-settings" class="flex-1 py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/40 font-bold text-xs rounded-xl shadow-lg transition flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-rotate-left"></i> Reset All Settings
+                </button>
+                <button id="btn-confirm-keybindings" class="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg transition">
+                    Save Settings
+                </button>
+            </div>
         </div>
     </div>
 
-    <!-- Multiplayer Room Panel -->
+    <!-- Multiplayer Room Panel --><!-- Multiplayer Room Panel -->
     <div id="multiplayer-panel" class="fixed top-16 right-4 z-40 w-72 glass-panel rounded-xl p-4 shadow-2xl hidden prevent-fire">
         <div class="flex items-center justify-between mb-2">
             <h2 class="text-sm font-bold text-white"><i class="fa-solid fa-users text-cyan-400 mr-2"></i>2-Player Online</h2>
@@ -171,17 +227,34 @@
         <button id="btn-leave-room" class="hidden mt-2 w-full rounded-lg border border-slate-700 px-3 py-2 text-xs text-slate-300 hover:bg-slate-800">Leave room</button>
     </div>
 
-    <!-- Ammo HUD Box (Bottom Right) -->
-    <div id="ammo-hud" class="fixed bottom-6 right-6 z-40 glass-panel rounded-2xl px-5 py-3 shadow-2xl flex items-center gap-4 prevent-fire">
-        <i class="fa-solid fa-boxes-packing text-2xl text-amber-400"></i>
-        <div class="flex flex-col">
-            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400">Magazine Ammo</span>
-            <div class="flex items-baseline gap-1">
-                <span id="ammo-current" class="text-2xl font-black text-amber-400">12</span>
-                <span class="text-sm font-semibold text-slate-500">/</span>
-                <span id="ammo-max" class="text-sm font-semibold text-slate-400">12</span>
+        <!-- Circular Gun Magazine & Reload HUD (Bottom Right) -->
+    <div id="ammo-hud" class="fixed bottom-6 right-6 z-40 glass-panel rounded-full p-2.5 shadow-2xl flex items-center gap-3 prevent-fire pr-5">
+        <div class="relative w-14 h-14 flex items-center justify-center">
+            <!-- SVG Circular Progress Loader -->
+            <svg class="w-full h-full -rotate-90" viewBox="0 0 36 36">
+                <!-- Background Circle -->
+                <path class="text-slate-800" stroke-width="3.5" stroke="currentColor" fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                <!-- Progress Circle -->
+                <path id="ammo-progress-ring" class="text-amber-400 transition-all duration-150" stroke-width="3.5" stroke-dasharray="100, 100" stroke-dashoffset="0" stroke-linecap="round" stroke="currentColor" fill="none"
+                    d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+            </svg>
+            <!-- Center Gun Icon / Reloading state -->
+            <div class="absolute inset-0 flex items-center justify-center text-amber-400">
+                <i id="hud-gun-icon" class="fa-solid fa-gun text-lg"></i>
             </div>
-            <div id="reload-indicator" class="hidden text-xs font-bold text-amber-400 animate-pulse mt-0.5">RELOADING...</div>
+        </div>
+        <div class="flex flex-col">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center gap-1.5">
+                <span id="ammo-status-label">Magazine</span>
+                <span id="ammo-percent" class="text-amber-300 font-mono">100%</span>
+            </span>
+            <div class="flex items-baseline gap-1">
+                <span id="ammo-current" class="text-xl font-black text-amber-400">12</span>
+                <span class="text-xs font-semibold text-slate-500">/</span>
+                <span id="ammo-max" class="text-xs font-semibold text-slate-400">12</span>
+            </div>
+            <div id="reload-indicator" class="hidden text-[10px] font-bold text-amber-400 animate-pulse">RELOADING...</div>
         </div>
     </div>
 
@@ -222,11 +295,33 @@
         </div>
     </div>
 
+    <!-- Auto Gun Scope Overlay (Matches Reference Image with Open Cap & Clear Crosshair View) -->
+    <div id="auto-scope-overlay" class="fixed inset-0 z-25 opacity-0 flex items-center justify-center pointer-events-none transition-opacity duration-150" style="background: radial-gradient(circle at center, transparent 35%, rgba(2,6,23,0.92) 58%, rgba(2,6,23,0.99) 100%);">
+        <div class="relative w-[380px] h-[380px] rounded-full border-[10px] border-slate-900 shadow-[0_0_60px_rgba(6,182,212,0.4)] overflow-hidden bg-slate-950/20">
+            <!-- Open Scope Cap on Right Side -->
+            <div class="absolute -right-8 top-1/2 -translate-y-1/2 w-16 h-28 bg-slate-900 border-2 border-slate-700 rounded-lg shadow-2xl rotate-12 flex items-center justify-center opacity-95">
+                <div class="w-2 h-2 rounded-full bg-slate-600"></div>
+            </div>
+            <!-- Tactical Reticle Crosshairs -->
+            <div class="absolute top-0 bottom-0 left-1/2 w-[1px] bg-emerald-400/85 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+            <div class="absolute left-0 right-0 top-1/2 h-[1px] bg-emerald-400/85 shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,1)]"></div>
+            <div class="absolute top-[42%] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400"></div>
+            <div class="absolute top-[58%] left-1/2 -translate-x-1/2 w-1 h-1 rounded-full bg-emerald-400"></div>
+            <div class="absolute top-6 left-1/2 -translate-x-1/2 text-emerald-400/80 font-mono text-[9px] tracking-widest bg-slate-900/80 px-2 py-0.5 rounded border border-emerald-500/30">TACTICAL 6X OPTIC</div>
+        </div>
+    </div>
+
     <!-- Pointer Lock Hint Banner -->
     <div id="pointer-lock-hint" class="fixed bottom-10 left-1/2 -translate-x-1/2 z-20 bg-slate-900/90 border border-indigo-500/40 text-slate-200 px-4 py-2 rounded-full text-xs font-semibold shadow-2xl flex items-center gap-2 animate-pulse pointer-events-none">
         <i class="fa-solid fa-mouse text-indigo-400"></i> Click Screen to Lock Mouse Aiming
     </div>
 
+        <!-- Free Spectate Mode Banner HUD -->
+    <div id="spectate-banner" class="fixed top-20 left-1/2 -translate-x-1/2 z-40 glass-panel border border-cyan-500/50 px-5 py-2.5 rounded-2xl text-cyan-300 font-bold text-xs shadow-2xl hidden flex items-center gap-3 prevent-fire">
+        <i class="fa-solid fa-eye text-cyan-400 text-base animate-pulse"></i>
+        <span>FREE SPECTATE MODE ACTIVE — Use [W, A, S, D] to fly, Mouse to look around. Press [V] to exit.</span>
+    </div>
     <!-- Bot Kills Banner -->
     <div id="kill-feed-banner" class="fixed top-20 left-1/2 -translate-x-1/2 z-30 pointer-events-none opacity-0 transition-all duration-300 transform scale-90 bg-rose-950/90 border border-rose-500 text-rose-200 px-6 py-2 rounded-xl text-sm font-black shadow-[0_0_30px_rgba(244,63,94,0.4)] flex items-center gap-2">
         <i class="fa-solid fa-skull text-rose-400 text-lg"></i> BOT ELIMINATED!
@@ -268,6 +363,11 @@
         let targetFOV = 55;
         let defaultFOV = 55;
         let scopedFOV = 22;
+
+        let isSpectating = false;
+        let spectatePos = new THREE.Vector3(0, 3, 5);
+        let spectateYaw = 0;
+        let spectatePitch = 0;
 
         const ammoConfigs = {
             pistol: { maxAmmo: 12, reloadTime: 1.8 },
@@ -431,9 +531,33 @@
         function updateAmmoHUD() {
             if (ammoCurrentEl) ammoCurrentEl.innerText = currentAmmo;
             if (ammoMaxEl) ammoMaxEl.innerText = ammoConfigs[combatMode].maxAmmo;
+
+            const max = ammoConfigs[combatMode].maxAmmo;
+            const pct = Math.round((currentAmmo / max) * 100);
+            
+            const percentEl = document.getElementById('ammo-percent');
+            if (percentEl) percentEl.innerText = `${pct}%`;
+
+            const ring = document.getElementById('ammo-progress-ring');
+            if (ring && !isReloading) {
+                // stroke-dashoffset: 0 is full (100%), 100 is empty (0%)
+                const dashOffset = 100 - pct;
+                ring.style.strokeDasharray = '100, 100';
+                ring.style.strokeDashoffset = dashOffset;
+            }
+
             if (reloadIndicatorEl) {
-                if (isReloading) reloadIndicatorEl.classList.remove('hidden');
-                else reloadIndicatorEl.classList.add('hidden');
+                const statusLabel = document.getElementById('ammo-status-label');
+                const gunIcon = document.getElementById('hud-gun-icon');
+                if (isReloading) {
+                    reloadIndicatorEl.classList.remove('hidden');
+                    if (statusLabel) statusLabel.innerText = 'Reloading';
+                    if (gunIcon) gunIcon.className = 'fa-solid fa-rotate-right text-lg animate-spin text-amber-400';
+                } else {
+                    reloadIndicatorEl.classList.add('hidden');
+                    if (statusLabel) statusLabel.innerText = 'Magazine';
+                    if (gunIcon) gunIcon.className = 'fa-solid fa-gun text-lg text-amber-400';
+                }
             }
         }
 
@@ -505,51 +629,142 @@
             return false;
         }
 
-        function create3DPistolMesh() {
+
+        function create3DAutoGunMesh() {
             const group = new THREE.Group();
+            group.name = "autoGunMeshGroup";
 
-            const darkMetal = new THREE.MeshStandardMaterial({ color: 0x111827, roughness: 0.3, metalness: 0.85 });
-            const chromeMetal = new THREE.MeshStandardMaterial({ color: 0x64748b, roughness: 0.2, metalness: 0.9 });
-            const gripMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.8, metalness: 0.1 });
+            const gunMat = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.4, metalness: 0.85 });
+            const darkMetal = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.3, metalness: 0.9 });
+            const scopeGlassMat = new THREE.MeshBasicMaterial({ color: 0x06b6d4, transparent: true, opacity: 0.85 });
+            const capMat = new THREE.MeshStandardMaterial({ color: 0x090d16, roughness: 0.2, metalness: 0.95 });
 
-            const grip = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.12, 0.05), gripMat);
-            grip.position.set(0, -0.05, -0.02);
-            grip.rotation.x = 0.2;
-            group.add(grip);
+            // Main receiver aligned properly in hands pointing forward (+Z)
+            const receiver = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.10, 0.50), gunMat);
+            receiver.position.set(0, 0.02, 0.05);
+            receiver.castShadow = true;
+            group.add(receiver);
 
-            const frame = new THREE.Mesh(new THREE.BoxGeometry(0.042, 0.04, 0.16), darkMetal);
-            frame.position.set(0, 0, 0);
-            group.add(frame);
-
-            pistolSlideMesh = new THREE.Mesh(new THREE.BoxGeometry(0.044, 0.045, 0.18), chromeMetal);
-            pistolSlideMesh.position.set(0, 0.02, 0.01);
-            group.add(pistolSlideMesh);
-
-            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.18, 12), darkMetal);
+            // Barrel pointing forward
+            const barrel = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, 0.45, 12), darkMetal);
             barrel.rotation.x = Math.PI / 2;
-            barrel.position.set(0, 0.02, 0.02);
+            barrel.position.set(0, 0.04, 0.35);
+            barrel.castShadow = true;
             group.add(barrel);
 
             const muzzleTip = new THREE.Object3D();
             muzzleTip.name = "muzzleTip";
-            muzzleTip.position.set(0, 0.02, 0.11);
+            muzzleTip.position.set(0, 0.04, 0.58);
+            group.add(muzzleTip);
+
+            // Magazine
+            const mag = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.20, 0.09), darkMetal);
+            mag.rotation.x = -0.15;
+            mag.position.set(0, -0.12, 0.15);
+            mag.castShadow = true;
+            group.add(mag);
+
+            // Stock
+            const stock = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.12, 0.35), gunMat);
+            stock.position.set(0, 0.01, -0.32);
+            stock.castShadow = true;
+            group.add(stock);
+
+            // Grip (held by hand)
+            const grip = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.16, 0.06), darkMetal);
+            grip.rotation.x = 0.25;
+            grip.position.set(0, -0.10, -0.04);
+            grip.castShadow = true;
+            group.add(grip);
+
+            // Tactical Scope mounted precisely on top of receiver matching reference image
+            const scopeBody = new THREE.Mesh(new THREE.CylinderGeometry(0.038, 0.038, 0.26, 16), darkMetal);
+            scopeBody.rotation.x = Math.PI / 2;
+            scopeBody.position.set(0, 0.13, 0.05);
+            scopeBody.castShadow = true;
+            group.add(scopeBody);
+
+            const scopeLensFront = new THREE.Mesh(new THREE.CircleGeometry(0.038, 16), scopeGlassMat);
+            scopeLensFront.position.set(0, 0.13, 0.18);
+            group.add(scopeLensFront);
+
+            const scopeLensBack = new THREE.Mesh(new THREE.CircleGeometry(0.038, 16), scopeGlassMat);
+            scopeLensBack.rotation.y = Math.PI;
+            scopeLensBack.position.set(0, 0.13, -0.08);
+            group.add(scopeLensBack);
+
+            // Open scope cap on the right side (matching reference image)
+            const scopeCapHinge = new THREE.Group();
+            scopeCapHinge.position.set(0.038, 0.13, 0.18);
+            
+            const capLid = new THREE.Mesh(new THREE.CircleGeometry(0.042, 16), capMat);
+            capLid.rotation.y = -Math.PI / 2.5; // flipped open to the right side like user's photo!
+            capLid.position.set(0.04, 0, 0);
+            capLid.castShadow = true;
+            scopeCapHinge.add(capLid);
+            group.add(scopeCapHinge);
+
+            // Bolt handle on the right side
+            const boltHandle = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 0.12, 8), darkMetal);
+            boltHandle.rotation.z = Math.PI / 2;
+            boltHandle.position.set(0.06, 0.05, -0.08);
+            group.add(boltHandle);
+
+            const boltKnob = new THREE.Mesh(new THREE.SphereGeometry(0.022, 12, 12), darkMetal);
+            boltKnob.position.set(0.12, 0.05, -0.08);
+            group.add(boltKnob);
+
+            // Correct attachment position in right hand, pointing straight forward (+Z)
+            group.position.set(0.0, 0.0, 0.05);
+            group.rotation.set(0, 0, 0);
+            group.scale.setScalar(1.2);
+            group.visible = false;
+            return group;
+        }
+
+        function create3DPistolMesh() {
+            const group = new THREE.Group();
+
+            const muzzleTip = new THREE.Object3D();
+            muzzleTip.name = "muzzleTip";
+            muzzleTip.position.set(0, 0.05, 0.25);
             group.add(muzzleTip);
 
             const flashGroup = new THREE.Group();
             const flashMat = new THREE.MeshBasicMaterial({ color: 0xfef08a, transparent: true, opacity: 0 });
             
             for (let i = 0; i < 4; i++) {
-                const starPart = new THREE.Mesh(new THREE.ConeGeometry(0.04, 0.12, 5), flashMat);
+                const starPart = new THREE.Mesh(new THREE.ConeGeometry(0.05, 0.15, 5), flashMat);
                 starPart.rotation.x = Math.PI / 2;
                 starPart.rotation.z = (Math.PI / 2) * i;
                 flashGroup.add(starPart);
             }
-            flashGroup.position.set(0, 0.02, 0.15);
+            flashGroup.position.set(0, 0.05, 0.3);
             flashGroup.visible = false;
             group.add(flashGroup);
-
             muzzleFlashParticleSystem = flashGroup;
-            group.scale.setScalar(1.5);
+
+            // Load GLTF Colt 1911 Pistol model
+            const loader = new THREE.GLTFLoader();
+            loader.load('assets/psx-colt-1911/source/PSX_Colt1911.glb', function (gltf) {
+                const model = gltf.scene;
+                model.scale.setScalar(0.35); // adjust scale to fit hand nicely
+                model.position.set(0, -0.02, 0);
+                model.rotation.y = Math.PI / 2;
+                model.traverse(child => {
+                    if (child.isMesh) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                    }
+                });
+                group.add(model);
+            }, undefined, function (error) {
+                console.warn('Could not load Colt 1911 GLB, fallback box used:', error);
+                const fallback = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.08, 0.2), new THREE.MeshStandardMaterial({ color: 0x475569 }));
+                group.add(fallback);
+            });
+
+            group.scale.setScalar(1.2);
             return group;
         }
 
@@ -821,49 +1036,73 @@
             proceduralBones = {};
 
             const skinMat = new THREE.MeshStandardMaterial({ color: 0xf3d2c1, roughness: 0.5, metalness: 0.05 });
-            const shirtMat = new THREE.MeshStandardMaterial({ color: 0x4f46e5, roughness: 0.6, metalness: 0.1 });
-            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x1e1b4b, roughness: 0.7, metalness: 0.1 });
-            const hairMat = new THREE.MeshStandardMaterial({ color: 0x27272a, roughness: 0.4, metalness: 0.2 });
+            const shirtMat = new THREE.MeshStandardMaterial({ color: 0x312e81, roughness: 0.5, metalness: 0.15 }); // Rich tactical blue-indigo shirt
+            const shirtAccentMat = new THREE.MeshStandardMaterial({ color: 0x4f46e5, roughness: 0.4, metalness: 0.2 });
+            const pantsMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.6, metalness: 0.1 }); // Dark tactical cargo pants
+            const shoeMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.3, metalness: 0.3 }); // Combat boots
+            const soleMat = new THREE.MeshStandardMaterial({ color: 0x09090b, roughness: 0.8, metalness: 0.1 });
+            const hairMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.3, metalness: 0.25 });
 
             const pelvis = new THREE.Group();
             pelvis.position.y = 0.95;
             characterGroup.add(pelvis);
             proceduralBones.pelvis = pelvis;
 
-            const hipsMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.14, 0.18, 16), pantsMat);
+            const hipsMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.165, 0.145, 0.20, 16), pantsMat);
+            hipsMesh.position.y = -0.02;
             hipsMesh.castShadow = true;
             pelvis.add(hipsMesh);
+
+            // Tactical belt
+            const beltMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.168, 0.168, 0.05, 16), shoeMat);
+            beltMesh.position.y = 0.08;
+            beltMesh.castShadow = true;
+            pelvis.add(beltMesh);
 
             const spine = new THREE.Group();
             spine.position.y = 0.12;
             pelvis.add(spine);
             proceduralBones.spine = spine;
 
-            const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.14, 0.32, 16), shirtMat);
-            torsoMesh.position.y = 0.16;
+            const torsoMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.185, 0.15, 0.34, 16), shirtMat);
+            torsoMesh.position.y = 0.17;
             torsoMesh.castShadow = true;
             spine.add(torsoMesh);
 
-            const clavicleBar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.42, 8), shirtMat);
+            // Chest plate / tactical vest accent
+            const vestMesh = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.22, 0.16), shirtAccentMat);
+            vestMesh.position.set(0, 0.18, 0.02);
+            vestMesh.castShadow = true;
+            spine.add(vestMesh);
+
+            const clavicleBar = new THREE.Mesh(new THREE.CylinderGeometry(0.035, 0.035, 0.44, 12), shirtMat);
             clavicleBar.rotation.z = Math.PI / 2;
-            clavicleBar.position.y = 0.30;
+            clavicleBar.position.y = 0.32;
             spine.add(clavicleBar);
 
-            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.07, 0.10, 12), skinMat);
-            neck.position.y = 0.38;
+            // Smooth flawless anatomical neck
+            const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.065, 0.12, 16), skinMat);
+            neck.position.set(0, 0.38, 0);
+            neck.castShadow = true;
             spine.add(neck);
+
+            // Collar transition piece to prevent any neck clipping
+            const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.085, 0.06, 16), shirtMat);
+            collar.position.set(0, 0.33, 0);
+            collar.castShadow = true;
+            spine.add(collar);
 
             const head = new THREE.Group();
             head.position.y = 0.48;
             spine.add(head);
             proceduralBones.head = head;
 
-            const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.11, 20, 20), skinMat);
+            const headMesh = new THREE.Mesh(new THREE.SphereGeometry(0.11, 24, 24), skinMat);
             headMesh.scale.set(0.9, 1.05, 0.95);
             headMesh.castShadow = true;
             head.add(headMesh);
 
-            const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.115, 20, 20, 0, Math.PI * 2, 0, Math.PI / 1.7), hairMat);
+            const hairCap = new THREE.Mesh(new THREE.SphereGeometry(0.116, 24, 24, 0, Math.PI * 2, 0, Math.PI / 1.7), hairMat);
             hairCap.position.set(0, 0.02, -0.01);
             head.add(hairCap);
 
@@ -872,7 +1111,7 @@
             head.add(ponytailBase);
             proceduralBones.ponytailBase = ponytailBase;
 
-            const hairBand = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 10), shirtMat);
+            const hairBand = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.02, 10), shirtAccentMat);
             hairBand.rotation.x = Math.PI / 3;
             ponytailBase.add(hairBand);
 
@@ -897,14 +1136,14 @@
             ponytailSeg2.add(strand2);
 
             const leftShoulderGroup = new THREE.Group();
-            leftShoulderGroup.position.set(0.21, 0.30, 0);
+            leftShoulderGroup.position.set(0.22, 0.31, 0);
             spine.add(leftShoulderGroup);
             proceduralBones.leftUpperArm = leftShoulderGroup;
 
-            const leftDeltoid = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 12), shirtMat);
+            const leftDeltoid = new THREE.Mesh(new THREE.SphereGeometry(0.058, 16, 16), shirtMat);
             leftShoulderGroup.add(leftDeltoid);
 
-            const leftUpperArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.26, 12), skinMat);
+            const leftUpperArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.26, 12), shirtMat);
             leftUpperArmMesh.position.y = -0.13;
             leftUpperArmMesh.castShadow = true;
             leftShoulderGroup.add(leftUpperArmMesh);
@@ -924,14 +1163,14 @@
             leftElbowGroup.add(leftHand);
 
             const rightShoulderGroup = new THREE.Group();
-            rightShoulderGroup.position.set(-0.21, 0.30, 0);
+            rightShoulderGroup.position.set(-0.22, 0.31, 0);
             spine.add(rightShoulderGroup);
             proceduralBones.rightUpperArm = rightShoulderGroup;
 
-            const rightDeltoid = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 12), shirtMat);
+            const rightDeltoid = new THREE.Mesh(new THREE.SphereGeometry(0.058, 16, 16), shirtMat);
             rightShoulderGroup.add(rightDeltoid);
 
-            const rightUpperArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.26, 12), skinMat);
+            const rightUpperArmMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.04, 0.26, 12), shirtMat);
             rightUpperArmMesh.position.y = -0.13;
             rightUpperArmMesh.castShadow = true;
             rightShoulderGroup.add(rightUpperArmMesh);
@@ -952,34 +1191,21 @@
             proceduralBones.rightHand = rightHand;
 
             pistolMeshGroup = create3DPistolMesh();
-            pistolMeshGroup.name = 'pistolMeshGroup';
-            autoGunParts = new THREE.Group();
-            autoGunParts.name = 'autoGunParts';
-            const autoMetal = new THREE.MeshStandardMaterial({ color: 0x1e293b, roughness: 0.38, metalness: 0.78 });
-            const stock = new THREE.Mesh(new THREE.BoxGeometry(0.045, 0.055, 0.2), autoMetal);
-            stock.position.set(0, -0.005, -0.16);
-            autoGunParts.add(stock);
-            const extendedBarrel = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.009, 0.2, 10), autoMetal);
-            extendedBarrel.rotation.x = Math.PI / 2;
-            extendedBarrel.position.set(0, 0.02, 0.18);
-            autoGunParts.add(extendedBarrel);
-            const magazine = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.12, 0.06), autoMetal);
-            magazine.position.set(0, -0.075, 0.015);
-            magazine.rotation.x = -0.12;
-            autoGunParts.add(magazine);
-            pistolMeshGroup.add(autoGunParts);
-            autoGunParts.visible = false;
-            pistolMeshGroup.position.set(0, -0.015, 0.025);
-            pistolMeshGroup.rotation.set(0, 0, 0);
-            pistolMeshGroup.visible = true;
+            pistolMeshGroup.name = "pistolMeshGroup";
+            pistolMeshGroup.position.set(0.02, -0.02, 0.05);
             rightHand.add(pistolMeshGroup);
 
+            autoGunParts = create3DAutoGunMesh();
+            autoGunParts.name = "autoGunParts";
+            rightHand.add(autoGunParts);
+
+            // Legs with Pants and Combat Boots / Shoes
             const leftThigh = new THREE.Group();
-            leftThigh.position.set(-0.09, -0.08, 0);
+            leftThigh.position.set(-0.095, -0.08, 0);
             pelvis.add(leftThigh);
             proceduralBones.leftThigh = leftThigh;
 
-            const leftThighMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.05, 0.40, 14), pantsMat);
+            const leftThighMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.058, 0.40, 16), pantsMat);
             leftThighMesh.position.y = -0.20;
             leftThighMesh.castShadow = true;
             leftThigh.add(leftThighMesh);
@@ -989,17 +1215,33 @@
             leftThigh.add(leftKnee);
             proceduralBones.leftKnee = leftKnee;
 
-            const leftShinMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.038, 0.40, 14), skinMat);
-            leftShinMesh.position.y = -0.20;
+            // Pants shin
+            const leftShinMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.045, 0.35, 16), pantsMat);
+            leftShinMesh.position.y = -0.175;
             leftShinMesh.castShadow = true;
             leftKnee.add(leftShinMesh);
 
+            // Combat Boot / Shoe
+            const leftShoe = new THREE.Group();
+            leftShoe.position.set(0, -0.37, 0.03);
+            leftKnee.add(leftShoe);
+
+            const bootFoot = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.08, 0.14), shoeMat);
+            bootFoot.position.set(0, 0, 0.02);
+            bootFoot.castShadow = true;
+            leftShoe.add(bootFoot);
+
+            const bootSole = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.03, 0.15), soleMat);
+            bootSole.position.set(0, -0.045, 0.02);
+            bootSole.castShadow = true;
+            leftShoe.add(bootSole);
+
             const rightThigh = new THREE.Group();
-            rightThigh.position.set(0.09, -0.08, 0);
+            rightThigh.position.set(0.095, -0.08, 0);
             pelvis.add(rightThigh);
             proceduralBones.rightThigh = rightThigh;
 
-            const rightThighMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.05, 0.40, 14), pantsMat);
+            const rightThighMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.058, 0.40, 16), pantsMat);
             rightThighMesh.position.y = -0.20;
             rightThighMesh.castShadow = true;
             rightThigh.add(rightThighMesh);
@@ -1009,26 +1251,40 @@
             rightThigh.add(rightKnee);
             proceduralBones.rightKnee = rightKnee;
 
-            const rightShinMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.038, 0.40, 14), skinMat);
-            rightShinMesh.position.y = -0.20;
+            // Pants shin
+            const rightShinMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.055, 0.045, 0.35, 16), pantsMat);
+            rightShinMesh.position.y = -0.175;
             rightShinMesh.castShadow = true;
             rightKnee.add(rightShinMesh);
 
-            characterGroup.add(pelvis);
-        }
+            // Combat Boot / Shoe
+            const rightShoe = new THREE.Group();
+            rightShoe.position.set(0, -0.37, 0.03);
+            rightKnee.add(rightShoe);
 
-        function createDetailedHandMesh(material, side) {
+            const rightBootFoot = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.08, 0.14), shoeMat);
+            rightBootFoot.position.set(0, 0, 0.02);
+            rightBootFoot.castShadow = true;
+            rightShoe.add(rightBootFoot);
+
+            const rightBootSole = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.03, 0.15), soleMat);
+            rightBootSole.position.set(0, -0.045, 0.02);
+            rightBootSole.castShadow = true;
+            rightShoe.add(rightBootSole);
+
+            characterGroup.add(pelvis);
+        }function createDetailedHandMesh(material, side) {
             const handGroup = new THREE.Group();
-            const palm = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.075, 0.025), material);
+            const palm = new THREE.Mesh(new THREE.BoxGeometry(0.065, 0.075, 0.028), material);
             palm.position.y = -0.035;
             palm.castShadow = true;
             handGroup.add(palm);
 
             const fingerConfigs = [
-                { name: 'index', x: -0.024, len: 0.045 },
-                { name: 'middle', x: -0.008, len: 0.052 },
-                { name: 'ring', x: 0.008, len: 0.047 },
-                { name: 'pinky', x: 0.024, len: 0.038 }
+                { name: 'index', x: -0.024, len: 0.045, curl: 0.6 },
+                { name: 'middle', x: -0.008, len: 0.052, curl: 1.1 },
+                { name: 'ring', x: 0.008, len: 0.047, curl: 1.15 },
+                { name: 'pinky', x: 0.024, len: 0.038, curl: 1.2 }
             ];
 
             fingerConfigs.forEach(f => {
@@ -1046,21 +1302,22 @@
                 phalanx2.castShadow = true;
                 fingerBase.add(phalanx2);
 
-                fingerBase.rotation.x = 0.15;
+                fingerBase.rotation.x = f.curl;
             });
 
             const thumbBase = new THREE.Group();
             const thumbX = side === 'left' ? 0.035 : -0.035;
-            thumbBase.position.set(thumbX, -0.03, 0.005);
+            thumbBase.position.set(thumbX, -0.03, 0.01);
             handGroup.add(thumbBase);
 
-            const thumbMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.006, 0.04, 8), material);
-            thumbMesh.position.y = -0.02;
+            const thumbMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.006, 0.045, 8), material);
+            thumbMesh.position.y = -0.022;
             thumbMesh.castShadow = true;
             thumbBase.add(thumbMesh);
 
-            thumbBase.rotation.z = side === 'left' ? -0.5 : 0.5;
-            thumbBase.rotation.x = 0.3;
+            thumbBase.rotation.z = side === 'left' ? -0.4 : 0.4;
+            thumbBase.rotation.x = 0.5;
+            thumbBase.rotation.y = side === 'left' ? -0.2 : 0.2;
 
             return handGroup;
         }
@@ -1068,7 +1325,8 @@
         function setCombatMode(mode) {
             combatMode = mode;
             if (autoGunParts) autoGunParts.visible = mode === 'auto';
-            const muzzleTip = pistolMeshGroup && pistolMeshGroup.getObjectByName('muzzleTip');
+            if (pistolMeshGroup) pistolMeshGroup.visible = mode === 'pistol';
+            const muzzleTip = (mode === 'auto' ? autoGunParts : pistolMeshGroup)?.getObjectByName('muzzleTip');
             if (muzzleTip) muzzleTip.position.z = mode === 'auto' ? 0.28 : 0.11;
 
             if (btnModePistol && btnModeAuto) {
@@ -1151,6 +1409,19 @@
         function updateShootingAndImpactFX(delta) {
             if (isReloading) {
                 reloadTimer -= delta;
+                const totalTime = ammoConfigs[combatMode].reloadTime;
+                const progressPct = Math.min(100, Math.max(0, ((totalTime - reloadTimer) / totalTime) * 100));
+                
+                const ring = document.getElementById('ammo-progress-ring');
+                const percentEl = document.getElementById('ammo-percent');
+                if (ring) {
+                    ring.style.strokeDasharray = '100, 100';
+                    ring.style.strokeDashoffset = 100 - progressPct;
+                }
+                if (percentEl) {
+                    percentEl.innerText = `${Math.round(progressPct)}%`;
+                }
+
                 if (reloadTimer <= 0) {
                     isReloading = false;
                     currentAmmo = ammoConfigs[combatMode].maxAmmo;
@@ -1301,12 +1572,13 @@
             }
 
             const startPos = new THREE.Vector3();
-            if (pistolMeshGroup) {
-                const muzzleTip = pistolMeshGroup.getObjectByName("muzzleTip");
+            const activeWeapon = combatMode === 'auto' ? autoGunParts : pistolMeshGroup;
+            if (activeWeapon) {
+                const muzzleTip = activeWeapon.getObjectByName("muzzleTip");
                 if (muzzleTip) {
                     muzzleTip.getWorldPosition(startPos);
                 } else {
-                    pistolMeshGroup.getWorldPosition(startPos);
+                    activeWeapon.getWorldPosition(startPos);
                 }
             } else {
                 characterGroup.getWorldPosition(startPos);
@@ -1438,7 +1710,54 @@
             renderer.setSize(window.innerWidth, window.innerHeight);
         }
 
+        function toggleSpectate() {
+            isSpectating = !isSpectating;
+            const banner = document.getElementById('spectate-banner');
+            if (banner) {
+                if (isSpectating) {
+                    banner.classList.remove('hidden');
+                    spectatePos.copy(camera.position);
+                    spectateYaw = cameraYaw;
+                    spectatePitch = cameraPitch;
+                } else {
+                    banner.classList.add('hidden');
+                }
+            }
+        }
+
         function updateCharacterMovement(delta) {
+            if (isSpectating) {
+                const flySpeed = 12.0;
+                const camDir = new THREE.Vector3(
+                    Math.sin(spectateYaw) * Math.cos(spectatePitch),
+                    Math.sin(spectatePitch),
+                    Math.cos(spectateYaw) * Math.cos(spectatePitch)
+                ).normalize();
+
+                const camRight = new THREE.Vector3(
+                    Math.sin(spectateYaw - Math.PI / 2),
+                    0,
+                    Math.cos(spectateYaw - Math.PI / 2)
+                ).normalize();
+
+                const flyMove = new THREE.Vector3();
+                if (keysPressed.w) flyMove.add(camDir);
+                if (keysPressed.s) flyMove.sub(camDir);
+                if (keysPressed.d) flyMove.add(camRight);
+                if (keysPressed.a) flyMove.sub(camRight);
+                if (keysPressed.space) flyMove.y += 1;
+                if (keysPressed.shift) flyMove.y -= 1;
+
+                if (flyMove.lengthSq() > 0) {
+                    flyMove.normalize();
+                    spectatePos.addScaledVector(flyMove, flySpeed * delta);
+                }
+
+                camera.position.copy(spectatePos);
+                camera.lookAt(spectatePos.clone().add(camDir));
+                updateShootingAndImpactFX(delta);
+                return;
+            }
             if (!isGrounded) {
                 velocityY += gravity * delta;
                 characterGroup.position.y += velocityY * delta;
@@ -1451,15 +1770,23 @@
             }
 
             const scopeOverlay = document.getElementById('scope-overlay');
+            const autoScopeOverlay = document.getElementById('auto-scope-overlay');
             const crosshair = document.getElementById('crosshair');
 
             if (combatMode === 'pistol' && isScoped) {
                 targetFOV = scopedFOV;
                 if (scopeOverlay) scopeOverlay.style.opacity = '1';
+                if (autoScopeOverlay) autoScopeOverlay.style.opacity = '0';
                 if (crosshair) crosshair.style.opacity = '0.3';
+            } else if (combatMode === 'auto' && isScoped) {
+                targetFOV = 18; // specialized rifle scope zoom
+                if (scopeOverlay) scopeOverlay.style.opacity = '0';
+                if (autoScopeOverlay) autoScopeOverlay.style.opacity = '1';
+                if (crosshair) crosshair.style.opacity = '0.1';
             } else {
                 targetFOV = defaultFOV;
                 if (scopeOverlay) scopeOverlay.style.opacity = '0';
+                if (autoScopeOverlay) autoScopeOverlay.style.opacity = '0';
                 if (crosshair) crosshair.style.opacity = '0.8';
             }
 
@@ -1477,8 +1804,15 @@
             if (keysPressed.d) moveVector.x += 1;
 
             const isMoving = moveVector.lengthSq() > 0;
-            const isSprinting = keysPressed.shift && isMoving && moveVector.z > 0;
-            const currentSpeed = (isSprinting ? baseSpeed * runMultiplier : baseSpeed);
+            const isSprinting = keysPressed.shift && isMoving && moveVector.z > 0 && !isScoped;
+            
+            // Gradually slow down movement when scope is open for precise aiming
+            if (typeof currentMovementSpeed === 'undefined') {
+                window.currentMovementSpeed = baseSpeed;
+            }
+            const targetSpeed = isScoped ? 1.6 : (isSprinting ? baseSpeed * runMultiplier : baseSpeed);
+            window.currentMovementSpeed = THREE.MathUtils.lerp(window.currentMovementSpeed, targetSpeed, 0.12);
+            const currentSpeed = window.currentMovementSpeed;
 
             const cameraForward = new THREE.Vector3(
                 Math.sin(cameraYaw),
@@ -1517,17 +1851,33 @@
                 }
             }
 
-            const shoulderVector = cameraRight.clone().multiplyScalar(cameraShoulderOffset);
-            const cameraLookTarget = characterGroup.position.clone()
-                .add(shoulderVector)
-                .add(new THREE.Vector3(0, cameraTargetHeight, 0));
+            // When scoped, place camera at character head/eye position looking forward so the character is behind the camera (hidden from view)
+            if (isScoped) {
+                characterGroup.visible = false;
+                const headPos = characterGroup.position.clone().add(new THREE.Vector3(0, cameraTargetHeight, 0));
+                camera.position.copy(headPos);
+                // Push camera slightly forward along look vector so it's past the shoulders/character
+                const lookDir = new THREE.Vector3(
+                    Math.sin(cameraYaw) * Math.cos(cameraPitch),
+                    Math.sin(cameraPitch),
+                    Math.cos(cameraYaw) * Math.cos(cameraPitch)
+                ).normalize();
+                camera.position.addScaledVector(lookDir, 0.2);
+                camera.lookAt(camera.position.clone().add(lookDir.multiplyScalar(50)));
+            } else {
+                characterGroup.visible = true;
+                const shoulderVector = cameraRight.clone().multiplyScalar(cameraShoulderOffset);
+                const cameraLookTarget = characterGroup.position.clone()
+                    .add(shoulderVector)
+                    .add(new THREE.Vector3(0, cameraTargetHeight, 0));
 
-            const camX = cameraLookTarget.x - Math.sin(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
-            const camY = cameraLookTarget.y + Math.sin(cameraPitch) * cameraDistance;
-            const camZ = cameraLookTarget.z - Math.cos(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
+                const camX = cameraLookTarget.x - Math.sin(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
+                const camY = cameraLookTarget.y + Math.sin(cameraPitch) * cameraDistance;
+                const camZ = cameraLookTarget.z - Math.cos(cameraYaw) * cameraDistance * Math.cos(cameraPitch);
 
-            camera.position.set(camX, camY, camZ);
-            camera.lookAt(cameraLookTarget);
+                camera.position.set(camX, camY, camZ);
+                camera.lookAt(cameraLookTarget);
+            }
 
             updateProceduralAnimation(delta, isMoving, isSprinting);
         }
@@ -1548,10 +1898,10 @@
                 proceduralBones.rightKnee.rotation.x = Math.max(0, legAngle * 0.8);
 
                 proceduralBones.spine.rotation.x = cameraPitch * 0.6;
-                proceduralBones.rightUpperArm.rotation.x = -Math.PI / 2.2 + cameraPitch * 0.8;
-                proceduralBones.rightUpperArm.rotation.y = -0.2;
-                proceduralBones.leftUpperArm.rotation.x = -Math.PI / 2.4 + cameraPitch * 0.8;
-                proceduralBones.leftUpperArm.rotation.y = 0.4;
+                proceduralBones.rightUpperArm.rotation.x = -Math.PI / 2 + cameraPitch * 0.8;
+                proceduralBones.rightUpperArm.rotation.y = 0.0;
+                proceduralBones.leftUpperArm.rotation.x = -Math.PI / 2 + cameraPitch * 0.8;
+                proceduralBones.leftUpperArm.rotation.y = 0.0;
 
                 if (proceduralBones.ponytailSeg1 && proceduralBones.ponytailSeg2) {
                     const sway = Math.sin(time * speedFactor * 0.5) * 0.25;
@@ -1570,10 +1920,10 @@
                 proceduralBones.rightKnee.rotation.x = THREE.MathUtils.lerp(proceduralBones.rightKnee.rotation.x, 0, 0.1);
 
                 proceduralBones.spine.rotation.x = cameraPitch * 0.6;
-                proceduralBones.rightUpperArm.rotation.x = -Math.PI / 2.2 + cameraPitch * 0.8;
-                proceduralBones.rightUpperArm.rotation.y = -0.2;
-                proceduralBones.leftUpperArm.rotation.x = -Math.PI / 2.4 + cameraPitch * 0.8;
-                proceduralBones.leftUpperArm.rotation.y = 0.4;
+                proceduralBones.rightUpperArm.rotation.x = -Math.PI / 2 + cameraPitch * 0.8;
+                proceduralBones.rightUpperArm.rotation.y = 0.0;
+                proceduralBones.leftUpperArm.rotation.x = -Math.PI / 2 + cameraPitch * 0.8;
+                proceduralBones.leftUpperArm.rotation.y = 0.0;
 
                 if (proceduralBones.ponytailSeg1 && proceduralBones.ponytailSeg2) {
                     proceduralBones.ponytailSeg1.rotation.z = Math.sin(time * 2) * 0.05;
@@ -1605,20 +1955,42 @@
 
             document.addEventListener('mousemove', (e) => {
                 if (!isMouseLocked) return;
-                const sensitivity = 0.0022;
-                cameraYaw -= e.movementX * sensitivity;
-                cameraPitch += e.movementY * sensitivity;
-                cameraPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cameraPitch));
+                const activeSensitivity = isScoped ? gameSettings.scopeSensitivity : gameSettings.mouseSensitivity;
+                if (isSpectating) {
+                    spectateYaw -= e.movementX * activeSensitivity;
+                    spectatePitch -= e.movementY * activeSensitivity;
+                    spectatePitch = Math.max(-Math.PI / 2.2, Math.min(Math.PI / 2.2, spectatePitch));
+                } else {
+                    cameraYaw -= e.movementX * activeSensitivity;
+                    cameraPitch += e.movementY * activeSensitivity;
+                    cameraPitch = Math.max(-Math.PI / 3, Math.min(Math.PI / 3, cameraPitch));
+                }
             });
 
             window.addEventListener('keydown', (e) => {
+                if (listeningForKeyAction) {
+                    e.preventDefault();
+                    const newKey = e.key.toLowerCase();
+                    gameSettings.keybindings[listeningForKeyAction] = newKey;
+                    
+                    const btn = document.querySelector(`.key-bind-btn[data-action="${listeningForKeyAction}"]`);
+                    if (btn) {
+                        btn.textContent = newKey === ' ' ? 'SPACE' : newKey.toUpperCase();
+                        btn.classList.remove('border-amber-400', 'text-amber-300');
+                    }
+                    listeningForKeyAction = null;
+                    return;
+                }
+
                 const key = e.key.toLowerCase();
-                if (key === 'w') keysPressed.w = true;
-                if (key === 'a') keysPressed.a = true;
-                if (key === 's') keysPressed.s = true;
-                if (key === 'd') keysPressed.d = true;
+                const kb = gameSettings.keybindings;
+
+                if (key === kb.w) keysPressed.w = true;
+                if (key === kb.a) keysPressed.a = true;
+                if (key === kb.s) keysPressed.s = true;
+                if (key === kb.d) keysPressed.d = true;
                 if (key === 'shift') keysPressed.shift = true;
-                if (key === ' ') {
+                if (key === kb.space || e.code === 'Space') {
                     keysPressed.space = true;
                     if (isGrounded) {
                         velocityY = jumpStrength;
@@ -1626,19 +1998,22 @@
                     }
                 }
 
-                if (key === 'r') startReload();
+                if (key === kb.reload) startReload();
+                if (key === kb.spectate) toggleSpectate();
                 if (key === '1') setCombatMode('pistol');
                 if (key === '2') setCombatMode('auto');
             });
 
             window.addEventListener('keyup', (e) => {
                 const key = e.key.toLowerCase();
-                if (key === 'w') keysPressed.w = false;
-                if (key === 'a') keysPressed.a = false;
-                if (key === 's') keysPressed.s = false;
-                if (key === 'd') keysPressed.d = false;
+                const kb = gameSettings.keybindings;
+
+                if (key === kb.w) keysPressed.w = false;
+                if (key === kb.a) keysPressed.a = false;
+                if (key === kb.s) keysPressed.s = false;
+                if (key === kb.d) keysPressed.d = false;
                 if (key === 'shift') keysPressed.shift = false;
-                if (key === ' ') keysPressed.space = false;
+                if (key === kb.space || e.code === 'Space') keysPressed.space = false;
             });
 
             window.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -1649,9 +2024,7 @@
                 if (e.button === 0) {
                     isMouseDownLeft = true;
                 } else if (e.button === 2) {
-                    if (combatMode === 'pistol') {
-                        isScoped = true;
-                    }
+                    isScoped = true;
                 }
             });
 
@@ -1945,6 +2318,174 @@
             }
         }
 
+        
+        // --- User Preferences & Settings State ---
+        const defaultGameSettings = {
+            mouseSensitivity: 0.0022,
+            scopeSensitivity: 0.0010,
+            crosshairColor: 'emerald',
+            crosshairSize: 20,
+            keybindings: {
+                w: 'w',
+                a: 'a',
+                s: 's',
+                d: 'd',
+                space: ' ',
+                reload: 'r',
+                spectate: 'v'
+            }
+        };
+
+        let gameSettings = {
+            mouseSensitivity: parseFloat(localStorage.getItem('fps_sensitivity')) || defaultGameSettings.mouseSensitivity,
+            scopeSensitivity: parseFloat(localStorage.getItem('fps_scope_sensitivity')) || defaultGameSettings.scopeSensitivity,
+            crosshairColor: localStorage.getItem('fps_crosshair_color') || defaultGameSettings.crosshairColor,
+            crosshairSize: parseInt(localStorage.getItem('fps_crosshair_size'), 10) || defaultGameSettings.crosshairSize,
+            keybindings: JSON.parse(localStorage.getItem('fps_keybindings')) || {...defaultGameSettings.keybindings}
+        };
+
+        let listeningForKeyAction = null;
+
+        const crosshairColorClasses = {
+            emerald: { center: 'bg-emerald-400', lines: 'bg-emerald-400/80' },
+            cyan: { center: 'bg-cyan-400', lines: 'bg-cyan-400/80' },
+            amber: { center: 'bg-amber-400', lines: 'bg-amber-400/80' },
+            rose: { center: 'bg-rose-400', lines: 'bg-rose-400/80' },
+            white: { center: 'bg-white', lines: 'bg-white/80' }
+        };
+
+        function applyCrosshairSettings() {
+            const centerEl = document.getElementById('crosshair-center');
+            const leftEl = document.getElementById('crosshair-left');
+            const rightEl = document.getElementById('crosshair-right');
+            const topEl = document.getElementById('crosshair-top');
+            const bottomEl = document.getElementById('crosshair-bottom');
+
+            const theme = crosshairColorClasses[gameSettings.crosshairColor] || crosshairColorClasses.emerald;
+
+            if (centerEl) centerEl.className = `w-2 h-2 rounded-full ${theme.center} border border-slate-900 shadow-md`;
+            [leftEl, rightEl, topEl, bottomEl].forEach(el => {
+                if (el) {
+                    el.className = el.className.replace(/bg-\w+-\d+\/?\d*/g, theme.lines);
+                    const size = gameSettings.crosshairSize;
+                    if (el === leftEl) el.style.left = `-${size}px`;
+                    if (el === rightEl) el.style.right = `-${size}px`;
+                    if (el === topEl) el.style.top = `-${size}px`;
+                    if (el === bottomEl) el.style.bottom = `-${size}px`;
+                }
+            });
+        }
+
+        function updateSettingsUIValues() {
+            const sensitivitySlider = document.getElementById('input-sensitivity');
+            const sensitivityValueLabel = document.getElementById('sensitivity-value');
+            const scopeSensitivitySlider = document.getElementById('input-scope-sensitivity');
+            const scopeSensitivityValueLabel = document.getElementById('scope-sensitivity-value');
+            const colorSelect = document.getElementById('crosshair-color-select');
+            const sizeSlider = document.getElementById('input-crosshair-size');
+
+            if (sensitivitySlider) {
+                sensitivitySlider.value = gameSettings.mouseSensitivity;
+                if (sensitivityValueLabel) sensitivityValueLabel.textContent = gameSettings.mouseSensitivity.toFixed(4);
+            }
+            if (scopeSensitivitySlider) {
+                scopeSensitivitySlider.value = gameSettings.scopeSensitivity;
+                if (scopeSensitivityValueLabel) scopeSensitivityValueLabel.textContent = gameSettings.scopeSensitivity.toFixed(4);
+            }
+            if (colorSelect) {
+                colorSelect.value = gameSettings.crosshairColor;
+            }
+            if (sizeSlider) {
+                sizeSlider.value = gameSettings.crosshairSize;
+            }
+            document.querySelectorAll('.key-bind-btn').forEach(btn => {
+                const action = btn.getAttribute('data-action');
+                btn.textContent = gameSettings.keybindings[action] === ' ' ? 'SPACE' : (gameSettings.keybindings[action]?.toUpperCase() || action.toUpperCase());
+                btn.classList.remove('border-amber-400', 'text-amber-300');
+            });
+            applyCrosshairSettings();
+        }
+
+        function initSettingsUI() {
+            const sensitivitySlider = document.getElementById('input-sensitivity');
+            const sensitivityValueLabel = document.getElementById('sensitivity-value');
+            const scopeSensitivitySlider = document.getElementById('input-scope-sensitivity');
+            const scopeSensitivityValueLabel = document.getElementById('scope-sensitivity-value');
+            const colorSelect = document.getElementById('crosshair-color-select');
+            const sizeSlider = document.getElementById('input-crosshair-size');
+
+            if (sensitivitySlider) {
+                sensitivitySlider.addEventListener('input', (e) => {
+                    gameSettings.mouseSensitivity = parseFloat(e.target.value);
+                    if (sensitivityValueLabel) sensitivityValueLabel.textContent = gameSettings.mouseSensitivity.toFixed(4);
+                });
+            }
+
+            if (scopeSensitivitySlider) {
+                scopeSensitivitySlider.addEventListener('input', (e) => {
+                    gameSettings.scopeSensitivity = parseFloat(e.target.value);
+                    if (scopeSensitivityValueLabel) scopeSensitivityValueLabel.textContent = gameSettings.scopeSensitivity.toFixed(4);
+                });
+            }
+
+            if (colorSelect) {
+                colorSelect.addEventListener('change', (e) => {
+                    gameSettings.crosshairColor = e.target.value;
+                    applyCrosshairSettings();
+                });
+            }
+
+            if (sizeSlider) {
+                sizeSlider.addEventListener('input', (e) => {
+                    gameSettings.crosshairSize = parseInt(e.target.value, 10);
+                    applyCrosshairSettings();
+                });
+            }
+
+            document.querySelectorAll('.key-bind-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const action = btn.getAttribute('data-action');
+                    document.querySelectorAll('.key-bind-btn').forEach(b => b.classList.remove('border-amber-400', 'text-amber-300'));
+                    btn.classList.add('border-amber-400', 'text-amber-300');
+                    btn.textContent = 'Press key...';
+                    listeningForKeyAction = action;
+                });
+            });
+
+            const btnConfirm = document.getElementById('btn-confirm-keybindings');
+            if (btnConfirm) {
+                btnConfirm.addEventListener('click', () => {
+                    localStorage.setItem('fps_sensitivity', gameSettings.mouseSensitivity);
+                    localStorage.setItem('fps_scope_sensitivity', gameSettings.scopeSensitivity);
+                    localStorage.setItem('fps_crosshair_color', gameSettings.crosshairColor);
+                    localStorage.setItem('fps_crosshair_size', gameSettings.crosshairSize);
+                    localStorage.setItem('fps_keybindings', JSON.stringify(gameSettings.keybindings));
+                    document.getElementById('keybindings-modal').classList.add('hidden');
+                });
+            }
+
+            const btnReset = document.getElementById('btn-reset-settings');
+            if (btnReset) {
+                btnReset.addEventListener('click', () => {
+                    gameSettings.mouseSensitivity = defaultGameSettings.mouseSensitivity;
+                    gameSettings.scopeSensitivity = defaultGameSettings.scopeSensitivity;
+                    gameSettings.crosshairColor = defaultGameSettings.crosshairColor;
+                    gameSettings.crosshairSize = defaultGameSettings.crosshairSize;
+                    gameSettings.keybindings = {...defaultGameSettings.keybindings};
+
+                    localStorage.removeItem('fps_sensitivity');
+                    localStorage.removeItem('fps_scope_sensitivity');
+                    localStorage.removeItem('fps_crosshair_color');
+                    localStorage.removeItem('fps_crosshair_size');
+                    localStorage.removeItem('fps_keybindings');
+
+                    updateSettingsUIValues();
+                });
+            }
+
+            updateSettingsUIValues();
+        }
+
         function init() {
             const container = document.getElementById('canvas-container');
 
@@ -1991,6 +2532,7 @@
             scene.add(characterGroup);
 
             createProceduralHumanAvatar();
+            initSettingsUI();
             setupEventListeners();
             setCombatMode('pistol');
             initMultiplayer();
